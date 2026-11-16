@@ -1,10 +1,13 @@
-// The competition entrypoint: copies game/ and screenshots/ into the output directory and
-// writes the dossier that describes them, using the kit's buildDossier, unchanged.
+// The competition entrypoint: copies game/ and screenshots/ from beside this file (the
+// repository, /bot on the grader) into the output directory and writes the dossier that
+// describes them, using the kit's buildDossier, unchanged. The grader's /input is empty,
+// so nothing is read from MAKEFUN_INPUT_DIR.
 import { copyFile, mkdir, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
-const input = process.env.MAKEFUN_INPUT_DIR ?? '/input';
+const here = fileURLToPath(new URL('.', import.meta.url));
 const output = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
 
 async function copyTree(src, dst) {
@@ -28,9 +31,9 @@ async function exists(path) {
 
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
-await copyTree(join(input, 'game'), join(output, 'game'));
-if (await exists(join(input, 'screenshots'))) {
-  await copyTree(join(input, 'screenshots'), join(output, 'screenshots'));
+await copyTree(join(here, 'game'), join(output, 'game'));
+if (await exists(join(here, 'screenshots'))) {
+  await copyTree(join(here, 'screenshots'), join(output, 'screenshots'));
 }
 // buildDossier returns the dossier bytes; it does not write the file itself.
 await writeFile(
